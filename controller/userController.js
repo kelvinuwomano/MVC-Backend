@@ -77,13 +77,20 @@ const deleteOne = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email} = req.body;
+        const { email, password} = req.body;
 
         const loginEndpoint = await userModel.findOne({email})
 
         if (!loginEndpoint) {
-            res.status(404).json({message: "User not found"});
+            res.status(404).json({message: "Invalid email or password"});
         }
+        
+        const checkPassword = await bcrypt.compare( password, loginEndpoint.password);
+
+        if (!checkPassword) {
+            res.status(404).json({message: "Invalid email or password"});
+        }
+
         return res.status(200).json({ name: loginEndpoint.name, email: loginEndpoint.email, password: loginEndpoint.password, id: loginEndpoint._id});
     } catch (error) {
         res.status(500).json({message: "An error occured", error: error.message});
